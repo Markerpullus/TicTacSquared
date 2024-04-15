@@ -22,11 +22,10 @@ class App extends React.Component {
             msg: ''
         }
     }
-        /*
-        */
 
     onClick = (index, subIndex) => {
         if (this.state.available[index] === 0) { return; }
+        if (this.state.board[index][subIndex] !== '') { return; }
 
         var newBoard = this.state.board
         newBoard[index][subIndex] = this.state.turn
@@ -74,7 +73,7 @@ class App extends React.Component {
     render() {
         return (
             <div className="bg-pink-400 h-screen w-screen flex justify-center items-center p-0 m-0 text-center">
-                <div class="bg-white p-8 rounded-lg 
+                <div class="bg-white p-14 rounded-lg 
                 shadow-md max-w-md w-full">
                     <h1 class="text-3xl font-bold mb-3 text-center">
                         Tic Tac Squared
