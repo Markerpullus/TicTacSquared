@@ -1,6 +1,6 @@
 import './App.css';
 import React from "react";
-import SubSquare from './SubSquare';
+import Square from './SubSquare';
 
 class App extends React.Component {
     constructor() {
@@ -19,6 +19,8 @@ class App extends React.Component {
             turn: 'x',
             available:
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            won:
+            ['', '', '', '', '', '', '', '', ''],
             msg: ''
         }
     }
@@ -30,19 +32,36 @@ class App extends React.Component {
         var newBoard = this.state.board
         newBoard[index][subIndex] = this.state.turn
 
-        var newAvailable = Array(9).fill(0)
-        newAvailable[subIndex] = 1
-
         this.setState({
             board: newBoard,
             turn: ((this.state.turn === 'x') ? 'o' : 'x'),
-            available: newAvailable
         })
 
+        this.checkSubSquareWin()
         this.checkWin()
+
+        var newAvailable;
+        if (this.state.won[subIndex] !== '')
+        {
+            newAvailable = Array(9).fill(1)
+            for (let i=0; i<9; i++)
+            {
+                if (this.state.won[i] !== '')
+                {
+                    newAvailable[i] = 0
+                }
+            }
+        }
+        else
+        {
+            newAvailable = Array(9).fill(0)
+            newAvailable[subIndex] = 1
+        }
+
+        this.setState({ available: newAvailable })
     }
 
-    checkWin = () =>  {
+    checkTicTacToe = (board) => {
         const winConditions = [
             [0, 1, 2],
             [3, 4, 5],
@@ -54,44 +73,60 @@ class App extends React.Component {
             [2, 4, 6]
         ];
 
-        for (let i=0; i < 9; i++){
-            for (let j=0; j < winConditions.length; j++) {
-                const condition = winConditions[j]
-                const boardVals = condition.map(subIndex => this.state.board[i][subIndex])
-                if (boardVals[0] === 'x' && boardVals[1] === 'x' && boardVals[2] === 'x')
-                {
-                    this.setState({msg: 'x wins'})
-                }
-                if (boardVals[0] === 'o' && boardVals[1] === 'o' && boardVals[2] === 'o')
-                {
-                    this.setState({msg: 'o wins'})
-                }
+        for (let j=0; j < winConditions.length; j++)
+        {
+            const condition = winConditions[j]
+            const boardVals = condition.map(index => board[index])
+            if (boardVals[0] === 'x' && boardVals[1] === 'x' && boardVals[2] === 'x')
+            {
+                return ('x')
+            }
+            if (boardVals[0] === 'o' && boardVals[1] === 'o' && boardVals[2] === 'o')
+            {
+                return ('o')
             }
         }
+        return ('')
+    }
+
+    checkSubSquareWin = () =>  {
+        const newWon = this.state.won
+        for (let i=0; i < 9; i++){
+            if (newWon[i] !== '') { continue; }
+            newWon[i] = this.checkTicTacToe(this.state.board[i])
+        }
+        this.setState({won: newWon})
+    }
+
+    checkWin = () => {
+        const winner = this.checkTicTacToe(this.state.won)
+        if (winner === '') { return; }
+        this.setState({msg: winner + " wins"})
     }
 
     render() {
         return (
             <div className="bg-pink-400 h-screen w-screen flex justify-center items-center p-0 m-0 text-center">
-                <div class="bg-white p-14 rounded-lg 
-                shadow-md max-w-md w-full">
+                <div class="bg-white px-1 py-8 sm:px-8 rounded-lg shadow-md max-w-md w-full">
                     <h1 class="text-3xl font-bold mb-3 text-center">
                         Tic Tac Squared
                     </h1>
-                    <div class="grid grid-cols-3 text-center">
+                    <div class="grid grid-cols-3 grid-rows-3 text-center gap-0">
                         {[...Array(9)].map((x, i) =>
-                        <SubSquare
+                        <Square
                             index={i}
                             onClick={this.onClick}
                             board={this.state.board}
                             isAvailable={!!this.state.available[i]}
+                            isX={this.state.won[i] === 'x'}
+                            isO={this.state.won[i] === 'o'}
                             />
                         )}
                     </div>
-                    <div id="status" class="mt-6 text-gray-900 
-                        text-center">{this.state.msg}</div>
+                    <div id="status" class="py-3 text-gray-900 
+                        text-center text-lg font-bold">{this.state.msg}</div>
                     <button
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-block"
+                        class="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded inline-block"
                         onClick={() => {
                             this.setState({
                                 board: 
@@ -107,6 +142,8 @@ class App extends React.Component {
                                 turn: 'x',
                                 available:
                                 [1, 1, 1, 1, 1, 1, 1, 1, 1],
+                                won:
+                                ['', '', '', '', '', '', '', '', ''],
                                 msg: ''
                             })
                         }}>
